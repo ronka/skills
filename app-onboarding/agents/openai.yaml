@@ -1,0 +1,4 @@
+interface:
+  display_name: "App Onboarding"
+  short_description: "Design onboarding flows that convert"
+  default_prompt: "Use $app-onboarding to design a mobile app onboarding flow that builds commitment before signup or payment."
