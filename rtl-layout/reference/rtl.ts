@@ -6,8 +6,11 @@ import { I18nManager, Platform } from 'react-native';
  * but are structured to support LTR switching in the future.
  */
 
-// Force RTL to always be true for this app
-export const isRTL = true;
+// Reflects the native layout direction. RTL is enforced at build time via
+// expo-localization's `extra.forcesRTL` in app.json, so this evaluates to true
+// in production builds; reading from I18nManager keeps the helpers honest if a
+// build ever ships without that flag.
+export const isRTL = I18nManager.isRTL;
 
 /**
  * Returns RTL-appropriate margin styles

@@ -22,17 +22,23 @@ Do **not** trigger for: non-directional styles (colors, fonts, opacity), backend
 1. Check if the project already has `utils/rtl.ts`. If yes, skip to "Usage".
 2. If not, copy `reference/rtl.ts` from this skill into the project at `utils/rtl.ts` (or wherever the project keeps utility modules — match its conventions).
 3. Ensure the project's TypeScript path alias (e.g. `@/utils/rtl` or `@utils/rtl`) resolves. Most Expo/RN projects already have `@/*` configured in `tsconfig.json`.
-4. In the app's root layout (e.g. `app/_layout.tsx`), call `initializeRTL()` once on mount:
-   ```tsx
-   import { useEffect } from 'react';
-   import { initializeRTL } from '@/utils/rtl';
-
-   export default function RootLayout() {
-     useEffect(() => { initializeRTL(); }, []);
-     // ...
-   }
-   ```
-   `initializeRTL()` calls `I18nManager.forceRTL(true)` once. On first install, a reload may be needed for RTL to take effect. This is expected.
+4. **Enforce RTL at build time via `expo-localization`** (preferred — no reload prompt, works from first launch):
+   - Install: `npx expo install expo-localization`
+   - In `app.json`, add `"expo-localization"` to `expo.plugins` and the two flags under `expo.extra`:
+     ```json
+     {
+       "expo": {
+         "plugins": ["expo-router", "expo-localization", "..."],
+         "extra": {
+           "supportsRTL": true,
+           "forcesRTL": true
+         }
+       }
+     }
+     ```
+   - Rebuild the native app (`eas build` or `npx expo prebuild && npx expo run:ios/android`). A JS-only reload is not enough — the flags are baked into the native shell.
+   - With this in place, `I18nManager.isRTL` is `true` from launch and `utils/rtl.ts`'s `isRTL` (which reads `I18nManager.isRTL`) resolves correctly.
+5. **Fallback only** — if you cannot rebuild natively, you can call `initializeRTL()` once on mount in the root layout (`app/_layout.tsx`). It calls `I18nManager.forceRTL(true)` and prompts a reload on first install. The build-time approach above is strictly better and should be used in new projects.
 
 ## The rules
 
@@ -109,8 +115,8 @@ Fixes:
 ### Rule 8 — Icons that imply direction should be mirrored
 Back chevrons, arrows, progress indicators: if you import a `ChevronLeft`, in RTL users expect it on the opposite side and pointing the opposite way. Either swap to `ChevronRight` or apply `transform: [{ scaleX: -1 }]`. Do not mirror icons that have intrinsic meaning (checkmarks, logos, media controls like play ▶).
 
-### Rule 9 — Test by reading the file's `I18nManager.isRTL`
-`isRTL` in the utility is a hardcoded `true` (this app is RTL-only), but React Native's runtime `I18nManager.isRTL` must also be `true` for physical mirroring (e.g. FlatList scroll direction) to work. Use `getRTLDebugInfo()` from the utility to verify both are aligned when debugging.
+### Rule 9 — `isRTL` derives from `I18nManager.isRTL`
+`isRTL` in the utility now reads `I18nManager.isRTL` directly, so the helpers track the native layout direction. If RTL is enforced at build time via `expo-localization` (`extra.forcesRTL: true`), this resolves to `true` from launch. If you see helpers returning LTR values on device, the native flag isn't set — verify the build, not the JS. Use `getRTLDebugInfo()` to confirm `i18nIsRTL === true` when debugging.
 
 ## Quick decision table
 
@@ -186,7 +192,7 @@ const styles = StyleSheet.create({
 - [ ] No `marginLeft/Right`, `paddingLeft/Right`, `left/right` properties in styles — use `rtlMargin`/`rtlPadding`/`rtlPosition` spreads
 - [ ] No NativeWind physical-direction classes (`ml-*`, `mr-*`, `pl-*`, `pr-*`, `text-left`, `text-right`, `left-*`, `right-*`)
 - [ ] Directional icons (chevrons, arrows) mirrored or swapped
-- [ ] `initializeRTL()` still called once in the app's root layout
+- [ ] `expo-localization` plugin enabled in `app.json` with `extra.supportsRTL` and `extra.forcesRTL` both `true` (or, fallback, `initializeRTL()` called once in the root layout)
 - [ ] New component's styles grep-clean for `'row'`, `'left'`, `'right'` used as literal style values
 
 ## Files bundled with this skill
