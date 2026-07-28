@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { commitFile } = require('./commit-file');
 
 function incrementUpdateVersion() {
   const versionPath = path.join(__dirname, '..', 'constants', 'version.ts');
@@ -36,6 +37,8 @@ function incrementUpdateVersion() {
   fs.writeFileSync(versionPath, updatedContents);
 
   console.log(`UPDATE_VERSION bumped from ${currentVersion} to ${nextVersion}`);
+
+  commitFile(versionPath, `chore: bump UPDATE_VERSION to ${nextVersion}`);
 }
 
 incrementUpdateVersion();

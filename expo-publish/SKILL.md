@@ -9,22 +9,19 @@ description: Guides publishing an Expo/EAS app — OTA updates, production build
 
 ### 1. OTA Update (no store review needed)
 
-Bumps `UPDATE_VERSION` in `constants/version.ts`, then pushes the update to all users on the current channel.
+Bumps `UPDATE_VERSION` in `constants/version.ts`, commits that bump, then pushes the update to all users on the current channel.
 
 ```bash
 npm run update
 ```
 
-Then commit the version bump:
-```bash
-git add constants/version.ts && git commit -m "chore: bump UPDATE_VERSION"
-```
+The commit is automatic — the script commits `constants/version.ts` before `eas update` runs, and aborts the update if the commit fails.
 
 ---
 
 ### 2. Production Build
 
-The build scripts auto-bump the patch version in `app.json` before building.
+The build scripts auto-bump the patch version in `app.json` and commit it before building.
 
 **iOS only:**
 ```bash
@@ -39,11 +36,6 @@ npm run build:production:android
 **Both platforms:**
 ```bash
 npm run build:production:ios && npm run build:production:android
-```
-
-After building, commit the version bump:
-```bash
-git add app.json && git commit -m "chore: bump app version"
 ```
 
 ---
@@ -76,8 +68,6 @@ npm run build:production:ios && npm run submit:production:ios
 npm run build:production:android && npm run submit:production:android
 ```
 
-Commit version bump after builds complete.
-
 ---
 
 ### 5. Simulator Build
@@ -102,6 +92,7 @@ Copy the bundled scripts into the project:
 ```bash
 cp <skill-path>/scripts/bump-app-version.js scripts/
 cp <skill-path>/scripts/increment-update-version.js scripts/
+cp <skill-path>/scripts/commit-file.js scripts/
 ```
 
 Add these npm scripts to `package.json`:
@@ -129,7 +120,7 @@ export const UPDATE_VERSION = 1;
 | `npm run update` | `UPDATE_VERSION` (integer, +1) | `constants/version.ts` |
 | `npm run build:production:*` | `version` patch (semver x.y.z+1) | `app.json` |
 
-Always commit version bumps so git history tracks releases accurately.
+Both scripts commit their own bump automatically, so git history tracks releases accurately. The commit is pathspec-limited to the version file, so unrelated working-tree changes stay uncommitted; if the commit fails the script exits non-zero and the `&& eas ...` step never runs. Outside a git repo the commit is skipped with a log line.
 
 ## Checklist Before Releasing
 
