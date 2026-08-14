@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { commitFile } = require('./commit-file');
 
 function bumpAppVersion() {
   const appJsonPath = path.join(process.cwd(), 'app.json');
@@ -36,6 +37,8 @@ function bumpAppVersion() {
   fs.writeFileSync(appJsonPath, updatedContents);
 
   console.log(`Expo version bumped from ${major}.${minor}.${patch} to ${nextVersion}`);
+
+  commitFile(appJsonPath, `chore: bump app version to ${nextVersion}`);
 }
 
 bumpAppVersion();

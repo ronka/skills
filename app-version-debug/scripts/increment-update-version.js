@@ -2,6 +2,7 @@
 
 const fs = require('fs');
 const path = require('path');
+const { commitFile } = require('./commit-file');
 
 function incrementUpdateVersion() {
   // Accept a custom settings path as CLI arg, or search common locations
@@ -51,6 +52,8 @@ function incrementUpdateVersion() {
   fs.writeFileSync(settingsPath, updatedContents);
 
   console.log(`UPDATE_VERSION bumped from ${currentVersion} to ${nextVersion} in ${settingsPath}`);
+
+  commitFile(settingsPath, `chore: bump UPDATE_VERSION to ${nextVersion}`);
 }
 
 incrementUpdateVersion();
