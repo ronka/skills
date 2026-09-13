@@ -115,8 +115,10 @@ Fixes:
 ### Rule 8 — Icons that imply direction should be mirrored
 Back chevrons, arrows, progress indicators: if you import a `ChevronLeft`, in RTL users expect it on the opposite side and pointing the opposite way. Either swap to `ChevronRight` or apply `transform: [{ scaleX: -1 }]`. Do not mirror icons that have intrinsic meaning (checkmarks, logos, media controls like play ▶).
 
-### Rule 9 — `isRTL` derives from `I18nManager.isRTL`
-`isRTL` in the utility now reads `I18nManager.isRTL` directly, so the helpers track the native layout direction. If RTL is enforced at build time via `expo-localization` (`extra.forcesRTL: true`), this resolves to `true` from launch. If you see helpers returning LTR values on device, the native flag isn't set — verify the build, not the JS. Use `getRTLDebugInfo()` to confirm `i18nIsRTL === true` when debugging.
+### Rule 9 — `isRTL` derives from `I18nManager.isRTL` (except in Expo Go)
+`isRTL` in the utility reads `I18nManager.isRTL` directly, so the helpers track the native layout direction. If RTL is enforced at build time via `expo-localization` (`extra.forcesRTL: true`), this resolves to `true` from launch. If you see helpers returning LTR values on device, the native flag isn't set — verify the build, not the JS. Use `getRTLDebugInfo()` to confirm `i18nIsRTL === true` when debugging.
+
+Expo Go can't apply `I18nManager.forceRTL` — it requires a native rebuild — so `I18nManager.isRTL` stays `false` there even in an RTL-only app. The utility detects Expo Go via `expo-constants` (`Constants.executionEnvironment === ExecutionEnvironment.StoreClient`) and hardcodes `isRTL = true` in that case instead of trusting `I18nManager`.
 
 ## Quick decision table
 

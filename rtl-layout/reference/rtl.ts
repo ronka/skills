@@ -1,4 +1,5 @@
 import { I18nManager, Platform } from 'react-native';
+import Constants, { ExecutionEnvironment } from 'expo-constants';
 
 /**
  * RTL Utility functions for consistent RTL support across the app
@@ -6,11 +7,13 @@ import { I18nManager, Platform } from 'react-native';
  * but are structured to support LTR switching in the future.
  */
 
-// Reflects the native layout direction. RTL is enforced at build time via
-// expo-localization's `extra.forcesRTL` in app.json, so this evaluates to true
-// in production builds; reading from I18nManager keeps the helpers honest if a
-// build ever ships without that flag.
-export const isRTL = I18nManager.isRTL;
+// Expo Go can't apply I18nManager.forceRTL (it requires a native rebuild), so
+// I18nManager.isRTL stays false there even though the app is RTL-only. Fall
+// back to a hardcoded true in Expo Go and trust I18nManager everywhere else,
+// where RTL is enforced at build time via expo-localization's `extra.forcesRTL`.
+const isExpoGo = Constants.executionEnvironment === ExecutionEnvironment.StoreClient;
+
+export const isRTL = isExpoGo ? true : I18nManager.isRTL;
 
 /**
  * Returns RTL-appropriate margin styles
@@ -87,7 +90,7 @@ export const rtlFlexDirection = {
  * This app is RTL-only, so we always force RTL mode
  */
 export const initializeRTL = () => {
-  if (Platform.OS !== 'web') {
+  if (Platform.OS !== 'web' && !isExpoGo) {
     try {
       if (!I18nManager.isRTL) {
         I18nManager.allowRTL(true);
