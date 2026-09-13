@@ -1,6 +1,6 @@
 ---
 name: rtl-layout
-description: Use when building or editing React Native layout/UI components in an RTL (right-to-left) app — e.g. Hebrew/Arabic apps. Provides an RTL utility module and guidelines for directional styles (flexDirection, textAlign, margins, borders, alignment) so mirrored layouts stay consistent. Triggers on tasks like "create a component", "build a screen layout", "fix RTL", "style this view", or any work touching flexDirection/textAlign/margin/padding-left/right in a React Native codebase that uses Hebrew, Arabic, Farsi, or otherwise forces RTL.
+description: Use when building or editing React Native layout/UI components in an RTL (right-to-left) app — e.g. Hebrew/Arabic apps. Provides an RTL utility module and guidelines for directional styles (flexDirection, textAlign, margins, borders, alignment) so mirrored layouts stay consistent. Triggers on tasks like "create a component", "build a screen layout", "fix RTL", "style this view", "tab bar is LTR", setting up NativeTabs, or any work touching flexDirection/textAlign/margin/padding-left/right in a React Native codebase that uses Hebrew, Arabic, Farsi, or otherwise forces RTL.
 ---
 
 # RTL Layout Skill (React Native)
@@ -38,7 +38,7 @@ Do **not** trigger for: non-directional styles (colors, fonts, opacity), backend
    - The plugin also reads `supportsRTL` / `forcesRTL` from `expo.extra`, but plugin options win (`withExpoLocalization` merges `{ ...config.extra, ...options }`), so keep them in one place.
    - Rebuild the native app (`eas build` or `npx expo prebuild && npx expo run:ios/android`). A JS-only reload is not enough — the flags are baked into the native shell.
    - With this in place, `I18nManager.isRTL` is `true` from launch in dev/EAS builds. In Expo Go (which can't apply native flags) the utility forces `isRTL = true` and mirrors by hand — see Rule 9.
-5. `expo-router`'s `LocaleProvider direction` only affects router/navigation UI. It does not mirror your own `View`s and `Text`.
+5. `expo-router`'s `LocaleProvider direction` only affects expo-router's JS navigation UI (JS bottom tabs, drawer, headers). It does not mirror your own `View`s and `Text`, and native navigation UI such as `NativeTabs` ignores it — see Rule 10.
 
 ## The rules
 
@@ -120,6 +120,24 @@ The utility tracks two directions:
 
 Helpers mirror by hand only when the two differ, so they render correctly in dev/EAS builds, Expo Go, and LTR apps. Never mix helpers with hand-picked physical values — a hardcoded `marginRight` renders on the left in a dev build and on the right in Expo Go. Use `getRTLDebugInfo()` to see `isRTL`, `i18nIsRTL`, and `mirror` when debugging.
 
+### Rule 10 — Native navigation components need an explicit direction
+`NativeTabs` from `expo-router/unstable-native-tabs` renders a real native tab bar (`UITabBarController` on iOS), not React Native views. It ignores React Native's RTL handling and `LocaleProvider direction`. With no direction passed, it uses `inherit` — the native app's direction, which on iOS can differ from `I18nManager.forceRTL`. In Expo Go the native app is always LTR (`forcesRTL` from the `expo-localization` plugin only applies in a native build), so `isRTL` is `true` while the tab bar stays LTR, with the first tab on the left.
+
+Pass the direction yourself, from `isRTL`:
+
+```tsx
+import { NativeTabs } from 'expo-router/unstable-native-tabs';
+import { isRTL } from '@/utils/rtl';
+
+<NativeTabs unstable_nativeProps={{ direction: isRTL ? 'rtl' : 'ltr' }}>
+  {/* triggers */}
+</NativeTabs>
+```
+
+expo-router forwards this to the `direction` prop of react-native-screens' `Tabs.Host` on iOS and Android.
+
+Treat other native navigation UI the same way: assume it does not read the JS or `LocaleProvider` direction. Set its direction explicitly from `isRTL` if it has a direction prop, and check it in Expo Go, where the Expo Go fallback makes `isRTL` differ from the native direction.
+
 ## Quick decision table
 
 | You want to…                                  | Use                               |
@@ -132,6 +150,7 @@ Helpers mirror by hand only when the two differ, so they render correctly in dev
 | Add padding on the reading-start side         | `...rtlPadding.paddingStart(n)`   |
 | Absolutely position at the start edge         | `...rtlPosition.start(n)`         |
 | Symmetric horizontal spacing                  | `marginHorizontal` / `paddingHorizontal` (no utility needed) |
+| Mirror a `NativeTabs` tab bar                 | `unstable_nativeProps={{ direction: isRTL ? 'rtl' : 'ltr' }}` |
 
 ## Reference component patterns
 
@@ -194,6 +213,7 @@ const styles = StyleSheet.create({
 - [ ] No `marginLeft/Right`, `paddingLeft/Right`, `left/right` properties in styles — use `rtlMargin`/`rtlPadding`/`rtlPosition` spreads
 - [ ] No NativeWind physical-direction classes (`ml-*`, `mr-*`, `pl-*`, `pr-*`, `text-left`, `text-right`, `left-*`, `right-*`)
 - [ ] Directional icons (chevrons, arrows) mirrored or swapped
+- [ ] `NativeTabs` (and other native navigation UI) gets an explicit `direction` from `isRTL`; the first tab is on the right in both Expo Go and a dev build
 - [ ] `expo-localization` plugin enabled in `app.json` with `supportsRTL` and `forcesRTL` both `true` in its plugin options
 - [ ] Checked one changed screen in both Expo Go and a dev build (`npx expo run:ios`): the title aligns right, row children start on the right, and a `marginStart` gap appears on the right in both
 - [ ] New component's styles grep-clean for `'row'`, `'left'`, `'right'` used as literal style values
