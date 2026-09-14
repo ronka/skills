@@ -31,6 +31,9 @@ Official references:
 
 - Send Email: <https://resend.com/docs/api-reference/emails/send-email>
 - Domains: <https://resend.com/docs/dashboard/domains/introduction>
+- MCP server: <https://resend.com/docs/mcp-server>
+
+Provision domains, keys, and delivery tests through the MCP server as described in [resend-setup.md](resend-setup.md).
 
 The Node SDK returns `{ data, error }`; handle `error` explicitly. A verified sending domain is required for production recipients. Provide both accurate HTML and usable text content when appropriate. Resend supports idempotency keys, but a retry that generates a different magic-link URL is not the same request; do not use one idempotency key for differing payloads.
 
@@ -77,5 +80,5 @@ The Node SDK returns `{ data, error }`; handle `error` explicitly. A verified se
 
 - production migration order is documented
 - Grow webhook and success URL configuration is documented
-- Resend domain and environment setup are documented
+- Resend domain is verified (or its pending DNS records are handed off) and the key is domain-restricted `sending_access`
 - a real low-value purchase verifies webhook, email receipt, account creation, redirect, and access
