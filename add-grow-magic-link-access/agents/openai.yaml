@@ -1,0 +1,4 @@
+interface:
+  display_name: "Grow Magic-Link Access"
+  short_description: "Add paid access via Grow, Better Auth, Resend"
+  default_prompt: "Use $add-grow-magic-link-access to add a secure Grow purchase-to-magic-link access flow to this project."
