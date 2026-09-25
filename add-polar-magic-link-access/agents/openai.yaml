@@ -1,0 +1,4 @@
+interface:
+  display_name: "Polar Magic-Link Access"
+  short_description: "Add paid access via Polar, Better Auth, Resend"
+  default_prompt: "Use $add-polar-magic-link-access to add a secure Polar purchase-to-magic-link access flow to this project."
