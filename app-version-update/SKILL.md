@@ -1,5 +1,5 @@
 ---
-name: app-version-debug
+name: app-version-update
 description: Add or update app version display and hidden debug menu in Expo/React Native settings screens. Use when adding a settings screen with version info, setting up version bump scripts for EAS builds and OTA updates, adding a hidden debug menu (triple-tap to reveal), or when the user asks to add debug options, version display, or OTA update version tracking to their app. Triggers on settings screen, version display, debug menu, hidden menu, app version, UPDATE_VERSION, bump version.
 ---
 
