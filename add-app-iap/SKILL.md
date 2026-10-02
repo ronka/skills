@@ -28,6 +28,18 @@ Tell the user that RevenueCat records consumable purchases but not their spent b
 
 Do not add a database merely for subscription or non-consumable restoration. A backend may still be needed to authorize server features.
 
+## Provision RevenueCat with the CLI
+
+Prefer the [RevenueCat CLI](https://github.com/RevenueCat/cli) (`rc`) over dashboard clicks for project configuration:
+
+1. Use an existing `rc`, or run it via `npx @revenuecat/cli`. Ask before a global install. If not authenticated, have the user run `rc auth login`; never handle their secret API keys.
+2. Select the project with `rc projects use`, then read state first with `rc apps list`, `rc products list`, `rc entitlements list`, and `rc offerings list --json`. Reuse matching resources instead of creating duplicates.
+3. Create only what is missing: apps, products, entitlements for subscriptions and unlocks (none for consumables), offerings, and packages. Use `rc products store sync` where store products already exist. Check `rc <command> --help` for current flags.
+4. Run `rc offerings verify`, then make the typed product registry match the CLI's identifiers exactly.
+5. Pass `--json` when parsing output. Confirm with the user before any write unless they already approved it, and do not use `--yes` to skip that.
+
+Store-side work the CLI cannot complete, such as App Store Connect or Play Console products, agreements, and store credentials, goes in the remaining dashboard work.
+
 ## Preserve the Ronka invariants
 
 - Put RevenueCat behind an app-domain purchase facade with a native adapter and typed unavailable fallback for Expo Go, web, tests, and unsupported platforms. Lazy-load newly added native UI modules when an OTA may reach older binaries.
