@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add Email"
+  short_description: "Wire Resend transactional email"
+  default_prompt: "Use $add-email to send transactional email from this app through Resend."

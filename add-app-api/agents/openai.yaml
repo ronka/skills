@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add App API"
+  short_description: "Server actions as Expo API routes"
+  default_prompt: "Use $add-app-api to add a server action this app can call without shipping its API key."

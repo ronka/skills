@@ -1,0 +1,306 @@
+---
+name: setup
+{{#mobile}}
+description: Set up this Expo repository from a product name and description. Run explicitly once with $setup in Codex or /setup in Claude Code.
+{{/mobile}}
+{{#web}}
+description: Set up this web repository from a product name and description. Run explicitly once with $setup in Codex or /setup in Claude Code.
+{{/web}}
+---
+
+{{#mobile}}
+# Set up the mobile product with Zero to App
+{{/mobile}}
+{{#web}}
+# Set up the web product with Zero to App
+{{/web}}
+
+{{#mobile}}
+This is a one-time workflow for an iOS and Android app. Match the language the user writes in. The language of the initial brief sets the default product locale and UI direction (see Gather the brief). After that, later conversation language does not change them. Keep Expo Web out of scope. The app's backend is its own API routes, added by the bundled `add-app-api` skill when an accepted integration or a requested feature needs one.
+{{/mobile}}
+{{#web}}
+This is a one-time workflow. Match the language the user writes in. If any user message contains Hebrew, answer only in Hebrew from that reply onward until the user explicitly asks for another language. The language of the initial brief sets the default product locale and UI direction (see Gather the brief). After that, later conversation language does not change them.
+{{/web}}
+
+## Resume ledger
+
+Before asking questions or changing files, look for `SETUP.md` at the repository root.
+
+{{#mobile}}
+- If it exists with `Status: in-progress`, read its decisions and notes, then continue from the first unchecked item. Do not repeat completed work or questions whose answers are recorded. If no decisions have been recorded and no setup work has been completed apart from preinstalled foundations, treat it as a fresh setup: do not announce that an in-progress file was found. Open the first question with `Welcome to the Zero to App starter — ready to ship? 🚀` in the user's language.
+{{/mobile}}
+{{#web}}
+- If it exists with `Status: in-progress`, read its decisions and notes, then continue from the first unchecked item. Do not repeat completed work or questions whose answers are recorded. If no decisions have been recorded and no setup work has been completed, treat it as a fresh setup: do not announce that an in-progress file was found. Open the first question with `Welcome to the Zero to App starter — ready to ship? 🚀` in the user's language.
+{{/web}}
+- If it exists with `Status: complete`, tell the user initialization is already complete and summarize the recorded result.
+- If it does not exist, create it immediately from this exact structure and keep it updated after every completed stage:
+
+```markdown
+# Zero to App setup
+
+Status: in-progress
+Last updated: YYYY-MM-DD
+
+## Decisions
+
+- Product name: Pending
+- Package name: Pending
+- Product description: Pending
+- Product locales: Pending
+- Layout direction: Pending
+{{#mobile}}
+- Expo slug: Pending
+- URI scheme: Pending
+- iOS bundle identifier: Pending
+- Android package: Pending
+{{/mobile}}
+- Brand colors: Pending
+{{#mobile}}
+- Brand assets: Pending
+{{/mobile}}
+- Database: Pending
+- Analytics: Pending
+- Email: Pending
+- Requested features: Pending
+
+## Checklist
+
+- [ ] Product basics captured
+{{#mobile}}
+- [ ] App identity validated
+{{/mobile}}
+{{#web}}
+- [ ] Product identity validated
+{{/web}}
+- [ ] Repository identity and product context applied
+- [ ] `DESIGN.md` created and brand colors applied
+{{#mobile}}
+- [ ] Template screens personalized with placeholder copy
+- [x] App version display and hidden debug menu foundation included
+- [ ] RTL layout handled
+- [ ] Brand asset decision recorded
+{{/mobile}}
+{{#web}}
+- [ ] Site identity, metadata, locale, and direction personalized
+- [ ] Template landing sections personalized with contextual draft copy
+{{/web}}
+- [ ] Neon MCP offered and decision applied
+- [ ] PostHog MCP offered and decision applied
+- [ ] Resend MCP offered and decision applied
+- [ ] Lint passed
+{{#mobile}}
+- [ ] Type check passed
+{{/mobile}}
+{{#web}}
+- [ ] Production build passed
+{{/web}}
+- [ ] Old identity scan passed
+- [ ] Setup-only files removed
+- [ ] Initialization complete
+- [ ] Integrations wired
+- [ ] Requested features built
+
+## Verification
+
+- Lint: Pending
+{{#mobile}}
+- Type check: Pending
+{{/mobile}}
+{{#web}}
+- Build: Pending
+{{/web}}
+- Identity scan: Pending
+
+## Handoff
+
+- Created: Pending
+- Start command: Pending
+- Next product step: Pending
+
+## Resume notes
+
+Continue from the first unchecked checklist item. Record any blocker here with the command, error summary, and next action.
+```
+
+Use ISO dates. Replace `Pending` values as answers arrive. When interrupted or blocked, update `Last updated` and `Resume notes` before stopping. A checkbox is checked only after its observable result is complete.
+
+For each MCP checkpoint, explicitly offer the integration even if the user has not mentioned it. Briefly explain why the product may need it when asking. If accepted, write and verify its project-scoped configuration before checking the item. If declined, replace the item with `- [x] Neon MCP declined`, `- [x] PostHog MCP declined`, or `- [x] Resend MCP declined`. Treat the choices independently.
+
+{{#mobile}}
+The app-version foundation is preinstalled. Preserve the three version scripts, explicit npm release commands, `UPDATE_VERSION`, settings-screen version row, hidden debug menu, blocking-on-launch update policy, and `runtimeVersion.policy: "appVersion"`. Verify that they remain internally consistent after setup. Add product-specific debug actions only when the product needs them. Do not run a version bump, EAS update, build, submission, or commit merely to test setup.
+
+For `RTL layout handled`:
+
+- When direction is `rtl`, or direction is `auto` and any supported locale uses RTL, invoke the bundled `rtl-layout` skill, apply its guidance to the initialized app, verify the resulting layouts, and then check the item.
+- For an LTR-only product, replace the item with `- [x] RTL layout not required (LTR-only product)`.
+
+{{/mobile}}
+## Gather the brief
+
+Run a short sequential interview with one question per turn. Ask for open-ended information in plain conversation. Use `AskUserQuestion` in Claude Code or `request_user_input` in Codex only for bounded choices with useful predefined options, such as product language, layout direction, or optional integrations. Do not use a question tool when the expected answer is primarily free text, and do not invent choices when context is missing. Wait for the answer, record it and every safely inferred field in `SETUP.md`, then continue. Skip information already supplied or recorded. Keep prompts conversational and concise; do not label them `Question X of Y` or reveal the full questionnaire.
+
+When setup starts with a brief (text the user wrote alongside `/z2a`, `$z2a`, `/setup`, or `$setup`), extract everything it settles before asking anything:
+
+- Product name: use the name as written. If it is entirely lowercase, title-case each word (`open student` becomes `Open Student`). Otherwise keep the user's casing (`OpenStudent` stays `OpenStudent`).
+- Description: the brief's description of what the product does, as one sentence.
+- Primary locale and direction: the language the brief is written in. A Hebrew brief means `he` and `rtl`. An English brief means `en` and `ltr`. Ask the language question only when the brief names a different product language than the one it is written in, or has too little text to tell.
+- Requested features: only the features the brief explicitly asks to build, such as a list of screens, flows, or capabilities. Record them as a short list in the brief's words. Record `None` when the brief gives only a name, a description, a language, or a direction. Never infer features from the product name, description, or category.
+
+Ask for the missing decisions in this order:
+
+1. In plain conversation, ask for the product name and a one-sentence description of what it should do. Record those words directly and continue.
+{{#mobile}}
+2. Unless the brief already settled the primary locale, use the question tool to ask whether the app's primary language is Hebrew, English, or a different language. Record Hebrew as `he` and English as `en`. If the user chooses a different language, ask for its language or locale code in plain conversation, then record a valid BCP 47 code; accept additional locales when the user supplies them. Treat the first locale as the app's primary language. A primary `he` locale means a Hebrew UI and `rtl` direction automatically; do not ask a separate direction question. For other locales, infer the standard direction and use the question tool only when the direction is genuinely ambiguous.
+{{/mobile}}
+{{#web}}
+2. Unless the brief already settled the primary locale, use the question tool to ask whether the app's primary language is Hebrew, English, or a different language. Record Hebrew as `he` and English as `en`. If the user chooses a different language, ask for its language or locale code in plain conversation, then record a valid BCP 47 code; accept additional locales when the user supplies them. Treat the first locale as the app's primary language. Infer its standard layout direction and use the question tool for direction (`ltr`, `rtl`, or `auto`) only when the direction is genuinely ambiguous.
+{{/web}}
+3. Use the question tool to offer Neon MCP, PostHog MCP, and Resend MCP as independent optional decisions. Give each choice a short purpose: Neon provides the product database, PostHog provides analytics, and Resend provides email for flows such as payment confirmations, receipts, sign-in links, and other transactional messages. Explain briefly that configuration is project-scoped and authentication remains a user action.
+   Each accepted integration also gets working code after initialization (see Wire integrations), so mention that accepting one means the product can use it right away.
+{{#mobile}}
+   Also say, in one sentence, that the database and email are reached only through the app's own server routes, so accepting either also sets those up and keeps keys out of the app.
+{{/mobile}}
+
+{{#mobile}}
+Derive the lowercase npm package name, Expo slug, URI scheme, and both native identifiers from the product name. Use `com.<normalized-slug>` for native identifiers and prefix the slug segment with `app` if it would not begin with a letter. Never ask for package naming, a URI scheme, or a reverse-domain namespace. Generate an accessible five-color palette that fits the product description and record brand assets as deferred because none are expected during setup; do not ask about colors or assets. Apply and verify these assumptions. Use another provider only when explicitly requested. Ask a follow-up only when the missing answer would materially change the product and cannot safely be inferred.
+
+Setup establishes identity and foundations; it does not define the product. Do not generate or present a synthesized brief, audience, problem, outcome, feature list, roadmap, or implementation plan. Preserve details the user volunteers. Build product features only when they are recorded under `Requested features` (see Build requested features); otherwise leave product development for the next task.
+{{/mobile}}
+{{#web}}
+Derive the lowercase npm package name from the product name and never ask the user to choose it. Generate an accessible five-color palette that fits the product description; do not ask about colors. Record and apply primary, accent, background, surface, and text colors, then verify contrast. Use another provider only when the user explicitly requests it. Ask a follow-up only when the missing answer would materially change the product and cannot safely be inferred.
+{{/web}}
+
+{{#web}}
+Setup establishes identity, foundations, and a coherent first-pass landing page; it does not finalize the product. Generate provisional positioning and section copy from the user's name and description, using conservative implications only. Keep unsupported features, audiences, outcomes, metrics, prices, testimonials, and marketing claims out of `PRODUCT.md` and do not present inferred details as settled decisions. Features recorded under `Requested features` are supported: build them after initialization (see Build requested features); otherwise leave product development for the next task.
+{{/web}}
+
+## Preserve the template layout
+
+Setup renames and configures the template; it never redesigns or strips it. Change only identity, colors, locale, direction, and visible copy.
+
+When the primary locale is `he`, open the bundled `hebrew-copy` skill (`.claude/skills/hebrew-copy/SKILL.md` in Claude Code, `.agents/skills/hebrew-copy/SKILL.md` in Codex) before writing any copy, and follow its voice, glossary, and punctuation.
+
+{{#mobile}}
+- Keep every route, screen, tab, component, and style in `src/app` and `src/components`. Do not delete, merge, reorder, or replace screens with a minimal shell.
+- In the home screen, show the product name in the brand badge, use the product name or description as the title, and the description as the subtitle. Replace the starter hint rows, including the `npm run reset-project` row that no longer applies, with neutral placeholder rows in the same structure.
+- Translate tab labels, settings labels, and all other starter-owned visible copy into the primary product locale.
+{{/mobile}}
+{{#web}}
+- Keep every section, component, class name, icon, visual element, and style in `app/page.tsx` and `app/globals.css`. Do not delete, merge, reorder, or replace sections with a minimal shell.
+- Rewrite every value in `app/landing-content.ts` and remove its `SETUP:` comment. Use the product name and supplied description as factual anchors, then generate natural contextual draft copy for every other field based on what the user wrote.
+- Replace hard-coded visible text in `app/page.tsx` (navigation labels, `aria-label` text, section kickers, the CTA eyebrow, and the hero dashboard mock) with contextual draft copy in the primary product locale. Replace the `0→` brand mark with the product's initial.
+{{/web}}
+{{#mobile}}
+- Placeholder copy is plainly labeled for replacement, written in the primary product locale, and never pretends to be real: use obvious placeholders such as "Feature one — describe the benefit here", not invented features, benefits, prices, metrics, user counts, customer names, or testimonials. Stats and testimonials stay as clearly labeled placeholders.
+{{/mobile}}
+{{#web}}
+- Contextual draft copy should read like a plausible first version of this specific product, not generic labels such as "Feature one", "placeholder", "coming soon", or "replace this text". Infer useful wording from the supplied description without inventing facts. Keep numbers non-quantitative, make any testimonial-shaped section an aspirational product statement rather than a fabricated customer quote, and use CTA labels and links that are safe before the real product flow exists.
+{{/web}}
+- Translate the supplied one-sentence description into the primary product locale when needed without asking another question. Product names remain unchanged unless the user supplied a localized name.
+
+
+## Apply
+
+{{#mobile}}
+Write `.starter-init.json` with the following shape, then run `node scripts/init-project.mjs .starter-init.json`:
+{{/mobile}}
+{{#web}}
+Write the answers to `.starter-init.json` using this shape:
+{{/web}}
+
+```json
+{
+  "productName": "Acme",
+  "packageName": "acme",
+  "description": "A one-sentence product description.",
+  "locales": ["en"],
+  "direction": "ltr",
+{{#mobile}}
+  "slug": "acme",
+  "scheme": "acme",
+  "iosBundleIdentifier": "com.example.acme",
+  "androidPackage": "com.example.acme",
+{{/mobile}}
+  "brandColors": {
+    "primary": "#6C63FF",
+    "accent": "#CBFF56",
+    "background": "#07091A",
+    "surface": "#11152D",
+    "text": "#FFFFFF"
+  },
+  "database": "none",
+  "analytics": "none",
+  "email": "none"
+}
+```
+
+{{#mobile}}
+Remove `.starter-init.json` after the command succeeds and update `SETUP.md` after each completed stage. If the user supplied brand assets, copy them into `assets/images` and update every relevant `app.json` icon or splash path. Otherwise record the deferred assets in the decisions and check only the brand asset decision item; do not pretend product branding is complete.
+
+Confirm that `DESIGN.md` contains the chosen palette, `PRODUCT.brandColors` is available to the app, the splash and branded UI use the intended roles, and text and controls meet WCAG AA contrast before checking the design task. Confirm every template screen and tab still exists, visible copy uses only the product name, the description, and labeled placeholders in the primary product locale, and no product features were added. Apply the palette to `primary`, `primarySoft`, and `accent` in `src/constants/theme.ts` for both color schemes while keeping WCAG AA contrast. Preserve and verify the preinstalled app-version foundation. Complete the `RTL layout handled` checkpoint using the rule above. Direction comes from the recorded product locale, which a Hebrew brief sets to `he`; Hebrew follow-up chat alone does not change it.
+{{/mobile}}
+{{#web}}
+Run `node scripts/init-project.mjs .starter-init.json`, then remove `.starter-init.json`. Update `SETUP.md` with the applied decisions and check each completed stage before moving on.
+{{/web}}
+
+{{#mobile}}
+The initializer owns the Expo Go fallback in `src/utils/rtl.ts`. Preserve `export const isRTL = isExpoGo ? <fallback> : I18nManager.isRTL;` and set `<fallback>` to `true` for an RTL product or `false` for an LTR product. Native builds must continue to use `I18nManager.isRTL`. When applying the `rtl-layout` skill, use its directional layout guidance but keep the starter-owned `src/utils/rtl.ts`; do not copy the skill's `reference/rtl.ts` over it, because the starter helpers also mirror correctly in Expo Go where native RTL is off. For Hebrew, verify `app.config.js` enables `expo-localization` with `supportsRTL` and `forcesRTL`, the root `LocaleProvider` receives `rtl`, and all starter-owned visible shell copy is Hebrew.
+{{/mobile}}
+{{#web}}
+Confirm that `DESIGN.md` contains the chosen palette, its roles are applied in `app/globals.css`, and text and controls meet WCAG AA contrast before checking the design task. Personalize the site identity, metadata, locale, and direction, and fill every template section with the supplied name, description, and contextual draft copy as described in Preserve the template layout. Confirm all template sections still render and no visible copy contains generic replacement labels. Preserve the framework-maintained block in `AGENTS.md`.
+{{/web}}
+
+{{#mobile}}
+Run `npm run lint` and `npx tsc --noEmit`. Resolve initialization failures before continuing.
+{{/mobile}}
+{{#web}}
+Run `npm run lint` and `npm run build`. Resolve failures caused by initialization before continuing.
+{{/web}}
+
+{{#mobile}}
+Search tracked text, excluding `.git`, build output, dependencies, binary assets, both copies of the setup-only `setup` skill, both copies of the `z2a` skill, and `SETUP.md`, case-insensitively for `zero-to-app`, `Zero to App`, `starter app`, `Welcome to Expo`, `Expo Starter`, and the old package name. Resolve every remaining match that would make the repository feel like a template.
+{{/mobile}}
+{{#web}}
+Search tracked text, excluding `.git`, build output, dependencies, both copies of the setup-only `setup` skill, both copies of the `z2a` skill, and `SETUP.md`, case-insensitively for `zero-to-app`, `Zero to App`, `starter template`, `Create Next App`, and the old package name. Resolve every remaining match that would make the repository feel like a template.
+{{/web}}
+
+{{#mobile}}
+After all prior checks pass, fill the `SETUP.md` handoff with a one-sentence creation summary, `npm run ios` and `npm run android`, and the highest-value next product step. Set the final decisions and verification results, remove both copies of this `setup` skill and `scripts/init-project.mjs`, then check `Setup-only files removed` and `Initialization complete` and set `Status: complete`. Retain the other bundled skills and remove all setup-only files.
+{{/mobile}}
+{{#web}}
+After all prior checks pass, fill the `SETUP.md` handoff with a one-sentence creation summary, `npm run dev`, and the highest-value next product step. Set the final decisions and verification results, remove both copies of this `setup` skill and `scripts/init-project.mjs`, then check `Setup-only files removed` and `Initialization complete` and set `Status: complete`. The initialized repository should retain the other bundled skills and contain no setup-only files.
+{{/web}}
+
+## Wire integrations
+
+Run the bundled skill for each integration accepted in the Decisions, in this order: `Database` Neon runs `add-database`, `Email` Resend runs `add-email`, `Analytics` PostHog runs `add-analytics`. Open each skill's `SKILL.md` (`.claude/skills/<skill>/SKILL.md` in Claude Code, `.agents/skills/<skill>/SKILL.md` in Codex) and follow it in full. No feature exists yet, so add no tables, emails, server actions, or custom events; the skills only connect the service and prove it works locally.
+{{#mobile}}
+
+When Neon or Resend is accepted, `add-database` and `add-email` first run `add-app-api`, which adds the app's API routes. Its first deploy and the `origin` setting are not part of setup: they need an EAS account and happen at the first `npm run deploy:api` or release, so list `npm run deploy:api -- --dev-domain <slug>` as a Continue action in the handoff.
+{{/mobile}}
+
+The MCP servers written during setup usually aren't usable in this session yet, because they need the user's approval and sign-in. Each skill has a path that doesn't depend on them. If a skill still stops on a blocker, leave its code and `.env.example` in place, record the blocker and next action in `Resume notes`, leave `Integrations wired` unchecked, and skip to the handoff with the blocker as its first Continue action. The next `/z2a` resumes the wiring, then builds the requested features.
+
+When every accepted skill passes its own verification, run the Verification checks again, because the skills add packages and code. Then check `Integrations wired`. When no integration was accepted, check it without running anything.
+
+## Build requested features
+
+When `Requested features` is `None`, check `Requested features built` and continue to the handoff.
+
+Otherwise build them now, in the same session, before the handoff. Treat the recorded list as a `z2a` request: open the `z2a` skill (`.claude/skills/z2a/SKILL.md` in Claude Code, `.agents/skills/z2a/SKILL.md` in Codex) and follow its routing for the list, which applies the matching bundled skills and the RTL rules. Build exactly the listed features with the template's existing patterns and the recorded locale and direction; add nothing the brief did not ask for. When a feature needs a decision only the user can make, such as a payment provider or an account to connect, ask it then. Run the Verification checks again, then check `Requested features built` and replace the handoff's next product step with the most valuable step after those features.
+
+Finish in the user's conversation language with a compact Zero to App handoff. Keep it to roughly 10 lines and use exactly two fitting emojis:
+
+1. A heading that says the product is ready and includes `🚀`.
+2. `Zero to App setup is complete.` translated naturally when needed.
+{{#mobile}}
+3. **Created:** one or two sentences covering the app identity, preserved template screens, selected integrations, app-version/debug foundation, requested features built, and successful checks.
+4. **Continue:** two or three concrete actions, starting with `npm run ios` or `npm run android`, then `/z2a <what to build next>` (`$z2a` in Codex); include only authentication, EAS linking, the first API deploy, or brand assets still required. When `add-database` created a temporary claimable database, claiming it before its expiry time comes first, with the claim URL.
+{{/mobile}}
+{{#web}}
+3. **Created:** one or two sentences covering the site identity, preserved landing page, selected integrations, requested features built, and successful checks.
+4. **Continue:** two or three concrete actions, starting with `npm run dev`, then `/z2a <what to build next>` (`$z2a` in Codex); include only authentication or configuration still required. When `add-database` created a temporary claimable database, claiming it before its expiry time comes first, with the claim URL.
+{{/web}}
+5. `Good luck shipping <product name>! ✨` translated naturally when needed.
+
+Do not narrate implementation details, repeat the checklist, or mention declined integrations. For Codex, MCP servers are project-scoped in `.codex/config.toml`; for Claude Code they are in `.mcp.json`.

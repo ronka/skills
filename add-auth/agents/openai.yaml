@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add Accounts"
+  short_description: "Magic-link sign-in with Better Auth"
+  default_prompt: "Use $add-auth to add user accounts with email magic-link sign-in."

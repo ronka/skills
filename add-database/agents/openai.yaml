@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add Database"
+  short_description: "Wire Neon Postgres with SQL migrations"
+  default_prompt: "Use $add-database to connect a Neon Postgres database to this app."

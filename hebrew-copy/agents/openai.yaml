@@ -1,0 +1,4 @@
+interface:
+  display_name: "Hebrew Copy"
+  short_description: "Natural Hebrew copy and formatting"
+  default_prompt: "Use $hebrew-copy to write or review this product's Hebrew copy."

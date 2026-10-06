@@ -1,0 +1,4 @@
+interface:
+  display_name: "Add Analytics"
+  short_description: "Wire PostHog product analytics"
+  default_prompt: "Use $add-analytics to connect PostHog analytics to this app."

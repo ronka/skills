@@ -1,6 +1,6 @@
 ---
 name: rtl-layout
-description: Use when building or editing React Native layout/UI components in an RTL (right-to-left) app — e.g. Hebrew/Arabic apps. Provides an RTL utility module and guidelines for directional styles (flexDirection, textAlign, margins, borders, alignment) so mirrored layouts stay consistent. Triggers on tasks like "create a component", "build a screen layout", "fix RTL", "style this view", "tab bar is LTR", setting up NativeTabs, or any work touching flexDirection/textAlign/margin/padding-left/right in a React Native codebase that uses Hebrew, Arabic, Farsi, or otherwise forces RTL.
+description: Use when building or editing React Native layout/UI components in an RTL (right-to-left) app — e.g. Hebrew/Arabic apps. Provides an RTL utility module and guidelines for directional styles (flexDirection, textAlign, margins, borders, alignment) so mirrored layouts stay consistent. Triggers on tasks like "create a component", "build a screen layout", "fix RTL", "style this view", or any work touching flexDirection/textAlign/margin/padding-left/right in a React Native codebase that uses Hebrew, Arabic, Farsi, or otherwise forces RTL.
 ---
 
 # RTL Layout Skill (React Native)
@@ -19,31 +19,31 @@ Do **not** trigger for: non-directional styles (colors, fonts, opacity), backend
 
 ## Installation (one-time per project)
 
-1. If the project already owns an `rtl.ts` (e.g. `utils/rtl.ts` or `src/utils/rtl.ts`), keep it — do **not** overwrite it with the reference. Only compare it against the helpers used below and add what's missing.
-2. If there is none, copy `reference/rtl.ts` from this skill into the project at `utils/rtl.ts` (or wherever the project keeps utility modules — match its conventions).
+1. Check if the project already has `utils/rtl.ts`. If yes, skip to "Usage".
+2. If not, copy `reference/rtl.ts` from this skill into the project at `utils/rtl.ts` (or wherever the project keeps utility modules — match its conventions).
 3. Ensure the project's TypeScript path alias (e.g. `@/utils/rtl` or `@utils/rtl`) resolves. Most Expo/RN projects already have `@/*` configured in `tsconfig.json`.
 4. **Enforce RTL at build time via `expo-localization`** (preferred — no reload prompt, works from first launch):
    - Install: `npx expo install expo-localization`
-   - In `app.json`, add `expo-localization` to `expo.plugins` with the RTL flags as plugin options (next to `supportedLocales` if you use it):
+   - In `app.json`, add `"expo-localization"` to `expo.plugins` and the two flags under `expo.extra`:
      ```json
      {
        "expo": {
-         "plugins": [
-           "expo-router",
-           ["expo-localization", { "supportsRTL": true, "forcesRTL": true }]
-         ]
+         "plugins": ["expo-router", "expo-localization", "..."],
+         "extra": {
+           "supportsRTL": true,
+           "forcesRTL": true
+         }
        }
      }
      ```
-   - The plugin also reads `supportsRTL` / `forcesRTL` from `expo.extra`, but plugin options win (`withExpoLocalization` merges `{ ...config.extra, ...options }`), so keep them in one place.
    - Rebuild the native app (`eas build` or `npx expo prebuild && npx expo run:ios/android`). A JS-only reload is not enough — the flags are baked into the native shell.
-   - With this in place, `I18nManager.isRTL` is `true` from launch in dev/EAS builds. In Expo Go (which can't apply native flags) the utility forces `isRTL = true` and mirrors by hand — see Rule 9.
-5. `expo-router`'s `LocaleProvider direction` only affects expo-router's JS navigation UI (JS bottom tabs, drawer, headers). It does not mirror your own `View`s and `Text`, and native navigation UI such as `NativeTabs` ignores it — see Rule 10.
+   - With this in place, `I18nManager.isRTL` is `true` from launch and `utils/rtl.ts`'s `isRTL` (which reads `I18nManager.isRTL`) resolves correctly.
+5. **Fallback only** — if you cannot rebuild natively, you can call `initializeRTL()` once on mount in the root layout (`app/_layout.tsx`). It calls `I18nManager.forceRTL(true)` and prompts a reload on first install. The build-time approach above is strictly better and should be used in new projects.
 
 ## The rules
 
 ### Rule 1 — Never write hardcoded `flexDirection: 'row'`
-Always use `rtlFlexDirection.row` from the utility. It lays children out from the reading-start edge in every environment (dev build, Expo Go, LTR).
+Always use `rtlFlexDirection.row` from the utility. This keeps row layouts flipping correctly if LTR is ever enabled.
 
 ```ts
 // Bad
@@ -59,22 +59,18 @@ Never use `textAlign: 'left'` or `'right'`. Think semantically: "start" = where 
 
 ```ts
 import { rtlTextAlign } from '@/utils/rtl';
-label:   { textAlign: rtlTextAlign.start }  // reading-start edge in every environment
-trailing:{ textAlign: rtlTextAlign.end }    // reading-end edge in every environment
+label:   { textAlign: rtlTextAlign.start }  // hugs the right in RTL
+trailing:{ textAlign: rtlTextAlign.end }    // hugs the left in RTL
 centered:{ textAlign: rtlTextAlign.center }
 ```
 
-### Rule 3 — Horizontal cross-axis alignment in columns uses `rtlAlign.start` / `.end`
-Use `rtlAlign` **only** for `alignItems` / `alignSelf` in a column container (the default `flexDirection`), where the cross axis is horizontal. The raw value depends on whether React Native already mirrors natively — don't reason about it, reason about the visual result. This is how a chat pins "from me" bubbles to the reading-start edge.
-
-Do **not** use `rtlAlign` for:
-- `justifyContent` inside a `rtlFlexDirection.row` row — the row direction already mirrors, so use plain `'flex-start'` / `'flex-end'`. (In Expo Go the row is `row-reverse`; `rtlAlign.start` would return `flex-end` and pack children to the left.)
-- Vertical axes — `justifyContent` in a column or `alignItems` in a row. Those aren't directional; `rtlAlign` would flip top/bottom in Expo Go.
+### Rule 3 — Flex alignment uses `rtlAlign.start` / `.end`
+For `alignItems` / `justifyContent` when you mean "push to the starting edge", use `rtlAlign`. It resolves to `flex-end` in RTL and `flex-start` in LTR. This is how MessageBubble pins "from me" bubbles to the right edge in an RTL chat.
 
 ```ts
 import { rtlAlign } from '@/utils/rtl';
-messageFromMe:    { alignItems: rtlAlign.start } // renders on the right in RTL
-messageFromOther: { alignItems: rtlAlign.end }   // renders on the left in RTL
+messageFromMe:    { alignItems: rtlAlign.start } // right edge in RTL
+messageFromOther: { alignItems: rtlAlign.end }   // left edge in RTL
 ```
 
 ### Rule 4 — Directional margins/padding use the spread pattern
@@ -84,22 +80,28 @@ For single-sided margin/padding, use `rtlMargin.marginStart/marginEnd` or `rtlPa
 import { rtlMargin } from '@/utils/rtl';
 
 backButton: {
-  ...rtlMargin.marginEnd(16),   // gap renders on the reading-end side (left in RTL)
+  ...rtlMargin.marginEnd(16),   // expands to { marginLeft: 16 } in RTL
   padding: 8,
 },
 ```
 
 For **symmetric** horizontal spacing, keep `marginHorizontal` / `paddingHorizontal` as-is — they're already direction-neutral.
 
-### Rule 5 — Asymmetric corner radii: verify on both platforms
-The utility has no corner-radius helper. Physical corners (`borderBottomLeftRadius`, ...) are handled differently per platform under native RTL: Android swaps left/right corners when `doLeftAndRightSwapInRTL` is on (`BorderRadiusStyle.kt`), iOS does not (`CascadedRectangleCorners::resolve` in `primitives.h`). For chat-bubble tails or other asymmetric corners, keep the styles local to the component and check the result on iOS and Android, in both Expo Go and a dev build.
+### Rule 5 — Asymmetric corner radii use `rtlBorderRadius`
+For chat bubbles or any element with differing left/right corners. The utility exposes `fromMe` and `fromOther` presets; if you need custom asymmetric corners, follow the same spread pattern and flip via the `isRTL` flag.
+
+```ts
+import { rtlBorderRadius } from '@/utils/rtl';
+bubbleFromMe:    { ...rtlBorderRadius.fromMe }
+bubbleFromOther: { ...rtlBorderRadius.fromOther }
+```
 
 ### Rule 6 — Absolute positioning uses `rtlPosition`
-When absolutely positioning something at the reading-start edge (visually right in RTL), use `rtlPosition.start(value)`; for the reading-end edge, `rtlPosition.end(value)`.
+When absolutely positioning something "to the start" (visually right in RTL), use `rtlPosition.left(value)` — it maps to the correct physical edge.
 
 ```ts
 import { rtlPosition } from '@/utils/rtl';
-badge: { position: 'absolute', top: 4, ...rtlPosition.start(8) } // 8pt from the reading-start edge
+badge: { position: 'absolute', top: 4, ...rtlPosition.left(8) }
 ```
 
 ### Rule 7 — NativeWind / Tailwind classNames do **not** auto-flip
@@ -113,30 +115,10 @@ Fixes:
 ### Rule 8 — Icons that imply direction should be mirrored
 Back chevrons, arrows, progress indicators: if you import a `ChevronLeft`, in RTL users expect it on the opposite side and pointing the opposite way. Either swap to `ChevronRight` or apply `transform: [{ scaleX: -1 }]`. Do not mirror icons that have intrinsic meaning (checkmarks, logos, media controls like play ▶).
 
-### Rule 9 — Helpers compare product direction with native direction
-The utility tracks two directions:
-- **Product direction** — `isRTL`. It reads `I18nManager.isRTL`, except in Expo Go, where it is forced to `true` (Expo Go can't apply native RTL flags; detected via `Constants.executionEnvironment === ExecutionEnvironment.StoreClient`).
-- **Native direction** — `I18nManager.isRTL`. When it is `true`, React Native already mirrors `flexDirection: 'row'`, `flex-start`/`flex-end`, `textAlign: 'left'/'right'`, and (with `doLeftAndRightSwapInRTL`, the default) margin/padding/position left/right.
+### Rule 9 — `isRTL` derives from `I18nManager.isRTL` (except in Expo Go)
+`isRTL` in the utility reads `I18nManager.isRTL` directly, so the helpers track the native layout direction. If RTL is enforced at build time via `expo-localization` (`extra.forcesRTL: true`), this resolves to `true` from launch. If you see helpers returning LTR values on device, the native flag isn't set — verify the build, not the JS. Use `getRTLDebugInfo()` to confirm `i18nIsRTL === true` when debugging.
 
-Helpers mirror by hand only when the two differ, so they render correctly in dev/EAS builds, Expo Go, and LTR apps. Never mix helpers with hand-picked physical values — a hardcoded `marginRight` renders on the left in a dev build and on the right in Expo Go. Use `getRTLDebugInfo()` to see `isRTL`, `i18nIsRTL`, and `mirror` when debugging.
-
-### Rule 10 — Native navigation components need an explicit direction
-`NativeTabs` from `expo-router/unstable-native-tabs` renders a real native tab bar (`UITabBarController` on iOS), not React Native views. It ignores React Native's RTL handling and `LocaleProvider direction`. With no direction passed, it uses `inherit` — the native app's direction, which on iOS can differ from `I18nManager.forceRTL`. In Expo Go the native app is always LTR (`forcesRTL` from the `expo-localization` plugin only applies in a native build), so `isRTL` is `true` while the tab bar stays LTR, with the first tab on the left.
-
-Pass the direction yourself, from `isRTL`:
-
-```tsx
-import { NativeTabs } from 'expo-router/unstable-native-tabs';
-import { isRTL } from '@/utils/rtl';
-
-<NativeTabs unstable_nativeProps={{ direction: isRTL ? 'rtl' : 'ltr' }}>
-  {/* triggers */}
-</NativeTabs>
-```
-
-expo-router forwards this to the `direction` prop of react-native-screens' `Tabs.Host` on iOS and Android.
-
-Treat other native navigation UI the same way: assume it does not read the JS or `LocaleProvider` direction. Set its direction explicitly from `isRTL` if it has a direction prop, and check it in Expo Go, where the Expo Go fallback makes `isRTL` differ from the native direction.
+Expo Go can't apply `I18nManager.forceRTL` — it requires a native rebuild — so `I18nManager.isRTL` stays `false` there even in an RTL-only app. The utility detects Expo Go via `expo-constants` (`Constants.executionEnvironment === ExecutionEnvironment.StoreClient`) and hardcodes `isRTL = true` in that case instead of trusting `I18nManager`.
 
 ## Quick decision table
 
@@ -144,13 +126,12 @@ Treat other native navigation UI the same way: assume it does not read the JS or
 |-----------------------------------------------|-----------------------------------|
 | Lay children horizontally                     | `flexDirection: rtlFlexDirection.row` |
 | Align text to the reading-start edge          | `textAlign: rtlTextAlign.start`   |
-| Push column children to the reading-start edge | `alignItems: rtlAlign.start` (column containers only) |
-| Pack row children from the reading-start edge | `flexDirection: rtlFlexDirection.row` + `justifyContent: 'flex-start'` |
+| Push flex children to the reading-start edge  | `alignItems: rtlAlign.start`      |
 | Add margin on the reading-end side            | `...rtlMargin.marginEnd(n)`       |
 | Add padding on the reading-start side         | `...rtlPadding.paddingStart(n)`   |
-| Absolutely position at the start edge         | `...rtlPosition.start(n)`         |
+| Round the bottom-outer corner of a chat bubble| `rtlBorderRadius.fromMe/fromOther`|
+| Absolutely position at the start edge         | `...rtlPosition.left(n)`          |
 | Symmetric horizontal spacing                  | `marginHorizontal` / `paddingHorizontal` (no utility needed) |
-| Mirror a `NativeTabs` tab bar                 | `unstable_nativeProps={{ direction: isRTL ? 'rtl' : 'ltr' }}` |
 
 ## Reference component patterns
 
@@ -177,15 +158,15 @@ const styles = StyleSheet.create({
 });
 ```
 
-### Chat bubble (edge alignment)
+### Chat bubble (asymmetric corners + edge alignment)
 ```tsx
-import { rtlAlign } from '@/utils/rtl';
+import { rtlAlign, rtlBorderRadius } from '@/utils/rtl';
 
 const styles = StyleSheet.create({
   messageFromMe:    { alignItems: rtlAlign.start },
   messageFromOther: { alignItems: rtlAlign.end },
-  bubbleFromMe:     { borderRadius: 16, backgroundColor: '#1E40AF' },
-  bubbleFromOther:  { borderRadius: 16, backgroundColor: '#FFF' },
+  bubbleFromMe:     { ...rtlBorderRadius.fromMe, backgroundColor: '#1E40AF' },
+  bubbleFromOther:  { ...rtlBorderRadius.fromOther, backgroundColor: '#FFF' },
 });
 ```
 
@@ -213,11 +194,9 @@ const styles = StyleSheet.create({
 - [ ] No `marginLeft/Right`, `paddingLeft/Right`, `left/right` properties in styles — use `rtlMargin`/`rtlPadding`/`rtlPosition` spreads
 - [ ] No NativeWind physical-direction classes (`ml-*`, `mr-*`, `pl-*`, `pr-*`, `text-left`, `text-right`, `left-*`, `right-*`)
 - [ ] Directional icons (chevrons, arrows) mirrored or swapped
-- [ ] `NativeTabs` (and other native navigation UI) gets an explicit `direction` from `isRTL`; the first tab is on the right in both Expo Go and a dev build
-- [ ] `expo-localization` plugin enabled in `app.json` with `supportsRTL` and `forcesRTL` both `true` in its plugin options
-- [ ] Checked one changed screen in both Expo Go and a dev build (`npx expo run:ios`): the title aligns right, row children start on the right, and a `marginStart` gap appears on the right in both
+- [ ] `expo-localization` plugin enabled in `app.json` with `extra.supportsRTL` and `extra.forcesRTL` both `true` (or, fallback, `initializeRTL()` called once in the root layout)
 - [ ] New component's styles grep-clean for `'row'`, `'left'`, `'right'` used as literal style values
 
 ## Files bundled with this skill
 
-- `reference/rtl.ts` — the full utility module. Copy into new projects at `utils/rtl.ts` (never over an existing project-owned `rtl.ts`).
+- `reference/rtl.ts` — the full utility module. Copy into new projects at `utils/rtl.ts`.

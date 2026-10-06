@@ -37,8 +37,8 @@ import Constants from 'expo-constants';
 const appVersion = (Constants.expoConfig?.version ?? '1.0.0') + '-' + UPDATE_VERSION;
 ```
 
-The `?? '1.0.0'` fallback matters on web, where `expoConfig` can be absent — render a fallback
-string, never `undefined`.
+The `?? '1.0.0'` fallback keeps development and test environments from rendering `undefined` when
+the Expo config is unavailable.
 
 ### Where to put it
 
