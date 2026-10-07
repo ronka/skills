@@ -32,13 +32,15 @@ Do not add a database merely for subscription or non-consumable restoration. A b
 
 Prefer the [RevenueCat CLI](https://github.com/RevenueCat/cli) (`rc`) over dashboard clicks for project configuration:
 
-1. Use an existing `rc`, or run it via `npx @revenuecat/cli`. Ask before a global install. If not authenticated, have the user run `rc auth login`; never handle their secret API keys.
-2. Select the project with `rc projects use`, then read state first with `rc apps list`, `rc products list`, `rc entitlements list`, and `rc offerings list --json`. Reuse matching resources instead of creating duplicates.
-3. Create only what is missing: apps, products, entitlements for subscriptions and unlocks (none for consumables), offerings, and packages. Use `rc products store sync` where store products already exist. Check `rc <command> --help` for current flags.
-4. Run `rc offerings verify`, then make the typed product registry match the CLI's identifiers exactly.
-5. Pass `--json` when parsing output. Confirm with the user before any write unless they already approved it, and do not use `--yes` to skip that.
+1. Use an existing official `rc`, or run commands via `npx @revenuecat/cli <command>`. Ask before a global install. If not authenticated, have the user run `npx @revenuecat/cli auth login`; never handle their secret API keys.
+2. For onboarding, run `npx @revenuecat/cli setup --json` from the app directory and follow the returned setup prompt in the current agent, preserving this skill's restore model and invariants. This returns guidance rather than completing setup. A developer starting directly in their own terminal can run `npx @revenuecat/cli setup`: the interactive flow installs RevenueCat's AI Toolkit skills, configures agent access, and launches their chosen local agent. See the maintained [agent guide](https://www.revenuecat.com/docs/tools/cli/agents).
+3. Select the intended existing project with `rc projects use`, then read state first with `rc apps list`, `rc products list`, `rc entitlements list`, and `rc offerings list --json`. Reuse matching resources instead of creating duplicates. Discover current commands with `rc commands --json` and `rc schema <command>`.
+4. Create only what is missing: apps, products, entitlements for subscriptions and unlocks (none for consumables), offerings, and packages. Use `rc products store sync` for supported store catalog work, reviewing its diff before applying it.
+5. Hand store credential setup to the developer in a local interactive terminal: `npx @revenuecat/cli setup apple <revenuecat-app-id>` or `npx @revenuecat/cli setup google <revenuecat-app-id>`. These create and upload store credentials and require human sign-in/2FA. The argument is a RevenueCat app ID (`app_...`), not a bundle ID. Keep passwords and verification codes out of chat; consult the current [command reference](https://www.revenuecat.com/docs/tools/cli/commands) for availability and manual fallbacks.
+6. Run `rc offerings verify`, then make the typed product registry match the CLI's identifiers exactly. Complete native sandbox verification below; Test Store readiness alone does not establish production-store readiness.
+7. Pass `--json` when parsing output. Confirm with the user before any write unless they already approved it, and do not use `--yes` to skip that.
 
-Store-side work the CLI cannot complete, such as App Store Connect or Play Console products, agreements, and store credentials, goes in the remaining dashboard work.
+Report remaining store work precisely: agreements, unsupported or unavailable catalog operations, and production review/submission steps. Use the dashboard/manual path only for work the current CLI cannot complete.
 
 ## Preserve the Ronka invariants
 
