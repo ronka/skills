@@ -80,6 +80,8 @@ Generate a secret with `openssl rand -base64 32` and write it to `.env.local` wi
 | `BETTER_AUTH_SECRET` | generated | generated | a new value per environment |
 | `BETTER_AUTH_URL` | `http://localhost:3000` | empty | the production URL |
 
+Web only, optional: `LOG_MAGIC_LINKS=1` in `.env.local` prints each sign-in link to the dev server log (`[magic-link] <email>: <url>`) and skips sending when `RESEND_API_KEY` is unset. Use it to test sign-in before a Resend key or verified domain exists. It is ignored when `NODE_ENV` is `production`; never set it in a deployed environment. Add `LOG_MAGIC_LINKS=` to `.env.example`.
+
 On mobile, keep `BETTER_AUTH_URL` empty locally, so development uses the dev server's own address and links open on a phone in Expo Go. Better Auth then logs "Base URL is not set" in development; that warning is expected. In EAS production it must be the API's `https://<slug>.expo.app`: EAS Hosting rewrites every request's `Origin` to that URL, and without a matching `baseURL` every sign-in fails with `INVALID_ORIGIN`.
 
 - Web production: `web-publish` transfers both to Vercel.
@@ -120,7 +122,7 @@ With `add-analytics`, call `identifyUser(user.id)` after sign-in and `resetAnaly
 **Web:**
 
 1. `npm run lint` and `npm run build`.
-2. In the browser on the dev server: `/app` signed out redirects to `/login`; request a link, open it, land on `/app`; opening the same link again shows the expired-link message.
+2. In the browser on the dev server: `/app` signed out redirects to `/login`; request a link (without a Resend key, set `LOG_MAGIC_LINKS=1` and copy the link from the dev server log), open it, land on `/app`; opening the same link again shows the expired-link message.
 3. Delete the account from `/app` and confirm the `user` row is gone.
 
 **Mobile:**
