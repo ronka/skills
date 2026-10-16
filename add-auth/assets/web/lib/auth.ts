@@ -7,6 +7,12 @@ import { sendEmail } from "./email";
 
 export const MAGIC_LINK_EXPIRES_IN_SECONDS = 15 * 60;
 
+/**
+ * Local testing without a Resend key: with LOG_MAGIC_LINKS=1 the sign-in link is printed to the
+ * server log instead of emailed. Never active in production, where the link is a credential.
+ */
+const logMagicLinks = process.env.LOG_MAGIC_LINKS === "1" && process.env.NODE_ENV !== "production";
+
 const google =
   process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET
     ? { clientId: process.env.GOOGLE_CLIENT_ID, clientSecret: process.env.GOOGLE_CLIENT_SECRET }
@@ -39,6 +45,11 @@ export const auth = betterAuth({
       rateLimit: { window: 60, max: 5 },
       // The one sender for every sign-in link. Other skills extend it rather than adding a second.
       async sendMagicLink({ email, url }) {
+        if (logMagicLinks) {
+          console.info(`[magic-link] ${email}: ${url}`);
+          // With a Resend key set, still send the real email; without one, logging is the delivery.
+          if (!process.env.RESEND_API_KEY) return;
+        }
         const minutes = MAGIC_LINK_EXPIRES_IN_SECONDS / 60;
         await sendEmail({
           to: email,
