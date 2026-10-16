@@ -189,7 +189,7 @@ When the primary locale is `he`, open the bundled `hebrew-copy` skill (`.claude/
 - Keep every section, component, class name, icon, visual element, and style in `app/page.tsx` and `app/globals.css`. Do not delete, merge, reorder, or replace sections with a minimal shell.
 - Rewrite every value in `app/landing-content.ts` and remove its `SETUP:` comment. Use the product name and supplied description as factual anchors, then generate natural contextual draft copy for every other field based on what the user wrote.
 - Replace hard-coded visible text in `app/page.tsx` (navigation labels, `aria-label` text, section kickers, the CTA eyebrow, and the hero dashboard mock) with contextual draft copy in the primary product locale. Replace the `0→` brand mark with the product's initial.
-- The hero dashboard mock in `app/page.tsx` ships with hard-coded demo content that does not belong to any product: the `$12,480` metric and its `מהכנסה חודשית קבועה` label, the `24.8%` change, the `+128` user count, the `RK` avatars, the status pill, footer steps, and floating notes. Replace every one with copy and non-quantitative content that fits the product (no invented figures or user counts); do not leave the landing page showing another product's numbers.
+- The hero dashboard mock in `app/page.tsx` ships with hard-coded demo content that does not belong to any product: the `$12,480` metric and its `הכנסה חודשית קבועה` label, the `24.8%` change, the `+128` user count, the `RK` avatars, the status pill, footer steps, and floating notes. Replace every one with copy and non-quantitative content that fits the product (no invented figures or user counts); do not leave the landing page showing another product's numbers.
 {{/web}}
 {{#mobile}}
 - Placeholder copy is plainly labeled for replacement, written in the primary product locale, and never pretends to be real: use obvious placeholders such as "Feature one — describe the benefit here", not invented features, benefits, prices, metrics, user counts, customer names, or testimonials. Stats and testimonials stay as clearly labeled placeholders.
@@ -262,7 +262,7 @@ Run `npm run lint` and `npm run build`. Resolve failures caused by initializatio
 Search tracked text, excluding `.git`, build output, dependencies, binary assets, both copies of the setup-only `setup` skill, both copies of the `z2a` skill, and `SETUP.md`, case-insensitively for `zero-to-app`, `Zero to App`, `starter app`, `Welcome to Expo`, `Expo Starter`, and the old package name. Resolve every remaining match that would make the repository feel like a template.
 {{/mobile}}
 {{#web}}
-Search tracked text, excluding `.git`, build output, dependencies, both copies of the setup-only `setup` skill, both copies of the `z2a` skill, and `SETUP.md`, case-insensitively for `zero-to-app`, `Zero to App`, `starter template`, `Create Next App`, the old package name, and the landing mock leftovers `12,480`, `24.8`, `+128`, and `RK`. Resolve every remaining match that would make the repository feel like a template.
+Search tracked text, excluding `.git`, build output, dependencies, both copies of the setup-only `setup` skill, both copies of the `z2a` skill, and `SETUP.md`, case-insensitively for `zero-to-app`, `Zero to App`, `starter template`, `Create Next App`, the old package name, and the landing mock leftovers `12,480`, `24.8`, and `+128`. Resolve every remaining match that would make the repository feel like a template.
 {{/web}}
 
 {{#mobile}}
