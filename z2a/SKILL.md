@@ -12,6 +12,15 @@ This skill is often installed globally, and a global skill wins over a starter's
 
 A folder is a Zero to App starter when its root has `SETUP.md` starting with `# Zero to App setup` and a router at `.claude/skills/z2a/SKILL.md` or `.agents/skills/z2a/SKILL.md`, or when its `git remote -v` points at `hightechguide/starter-web` or `hightechguide/starter-mobile`.
 
+## 0. Welcome first, then work quietly
+
+1. Before you run any command or tool, even a quick check, send one short welcome as your very first message. Brand it "Zero to App", write it in the user's language, and in one or two sentences say that you are getting things ready. Examples:
+   - Hebrew: "היי, זה Zero to App 👋 בוא נבנה את האפליקציה שלך. מכין הכל, זה ייקח דקה או שתיים."
+   - English: "Hi, this is Zero to App 👋 Let's build your app. I'm getting everything ready, this takes a minute or two."
+2. Welcome once per run. This welcome counts for the whole session, including after you hand off to a starter's own router or `setup`. If those files tell you to open with their own welcome line, do not greet again: skip that line and go straight to their first question or step.
+3. Never narrate internal checks. Do not tell the user that the folder is empty, that no starter was found, that you are checking tools, git, `gh`, the git remote, `SETUP.md`, or which step of this file you are on. Run those checks silently.
+4. Speak up only when the user is needed (a GitHub sign-in code and link, a question, an access problem) or to share a meaningful milestone in plain, non-technical words, such as "מוריד את תבנית המובייל..." or "Downloading the mobile template...". Keep every message short and friendly.
+
 ## 1. Is there already a starter?
 
 1. Find the repository root with `git rev-parse --show-toplevel`. If it is a starter, follow the router from that root and stop here. Its routing replaces everything below.
