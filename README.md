@@ -8,7 +8,7 @@ Install an individual skill with:
 npx skills add ronka/skills --skill mobile-release
 ```
 
-Maintain full skill directories here. `setup` is a platform template for the Zero to App generator; `z2a` remains local to that project. Other skills, such as `execute-plan` and `roast-my-cv`, are independent and are not bundled into the starters.
+Maintain full skill directories here. `setup` is a platform template for the Zero to App generator. The starters' `z2a` router remains local to that project. The `z2a` skill here is a public entry point: run it anywhere and it downloads the purchased web or mobile starter for you (or explains how to get access), then hands off to the starter's own router. Install it with `npx skills add ronka/skills --skill z2a`. Other skills, such as `execute-plan` and `roast-my-cv`, are independent and are not bundled into the starters.
 
 After editing, committing, and pushing here, update Zero to App from its root:
 

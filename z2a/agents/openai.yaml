@@ -1,0 +1,6 @@
+interface:
+  display_name: "z2a"
+  short_description: "Start or extend a Zero to App product from one command"
+  default_prompt: "Use $z2a to build my app idea."
+policy:
+  allow_implicit_invocation: false
